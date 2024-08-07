@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "112565595415",
+    "project_id": "multivendorshop-c5357",
+    "storage_bucket": "multivendorshop-c5357.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:112565595415:android:9205d4dd80d9470e7d9b52",
+        "android_client_info": {
+          "package_name": "com.atutechs.multivendor_shop"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "112565595415-qkrje9vnbe1f5fu2copjk7h67v01636p.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.atutechs.multivendor_shop",
+            "certificate_hash": "0b1012e7d34b48ec6e39fe23ab5720a12434efd5"
+          }
+        },
+        {
+          "client_id": "112565595415-45jrjek53a05ak2hvrn5oivq1i917ert.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAzE3tQeycMUgEw-RvCLL2Hy7744BtRpIs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "112565595415-45jrjek53a05ak2hvrn5oivq1i917ert.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "112565595415-3ah1hqj79jui61ditn91nhr5ps4vliqj.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.atutechs.multivendorShop"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

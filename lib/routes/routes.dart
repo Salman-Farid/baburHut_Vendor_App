@@ -1,0 +1,29 @@
+import 'package:multivendor_shop/views/auth/auth.dart';
+import 'package:multivendor_shop/views/auth/forgot_password.dart';
+import 'package:multivendor_shop/views/main/seller/dashboard_screens/account_balance.dart';
+import 'package:multivendor_shop/views/main/seller/dashboard_screens/manage_products.dart';
+import 'package:multivendor_shop/views/main/seller/dashboard_screens/orders.dart';
+import 'package:multivendor_shop/views/main/seller/dashboard_screens/statistics.dart';
+import 'package:multivendor_shop/views/main/seller/dashboard_screens/store_setup.dart';
+import 'package:multivendor_shop/views/main/seller/seller_bottomNav.dart';
+import '../views/main/seller/dashboard_screens/edit_product.dart';
+import '../views/main/seller/dashboard_screens/upload_product.dart';
+import '../views/main/seller/edit_profile.dart';
+import '../views/splash/entry.dart';
+import '../views/splash/splash.dart';
+
+var routes = {
+  Auth.routeName: (context) => const Auth(),
+  ForgotPassword.routeName: (context) => const ForgotPassword(),
+  SplashScreen.routeName: (context) => const SplashScreen(),
+  EntryScreen.routeName: (context) => const EntryScreen(),
+  SellerBottomNav.routeName: (context) => const SellerBottomNav(),
+  ManageProductsScreen.routeName: (context) => const ManageProductsScreen(),
+  UploadProduct.routeName: (context) => const UploadProduct(),
+  // OrdersScreen.routeName: (context) => const OrdersScreen(),
+  StoreSetupScreen.routeName: (context) => const StoreSetupScreen(),
+  StatisticsScreen.routeName: (context) => const StatisticsScreen(),
+  AccountBalanceScreen.routeName: (context) => const AccountBalanceScreen(),
+
+  EditProduct.routeName: (context)=> const EditProfile(),
+};
