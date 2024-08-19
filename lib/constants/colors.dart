@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-const primaryColor = Color(0XFF8DC73F);
+const primaryColor = Colors.deepPurpleAccent;
 var litePrimary = const Color(0XFF8DC73F).withOpacity(0.5);
-var greyLite = Colors.grey.shade400;
-var bWhite = Colors.white70.withOpacity(0.5);
+var greyLite = Colors.grey.shade50;
+var bWhite = Colors.white;
 
 
 var titleStyle1 = const TextStyle(

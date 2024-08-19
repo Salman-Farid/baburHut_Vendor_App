@@ -1,11 +1,11 @@
-import 'package:carousel_slider/carousel_slider.dart';
+//import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_carousel_slider_plus/carousel_slider.dart';
 import 'package:multivendor_shop/components/loading.dart';
 import 'package:multivendor_shop/models/cart.dart';
-import 'package:multivendor_shop/views/main/store/store_details.dart';
 import 'package:provider/provider.dart';
 import '../../../constants/colors.dart';
 import 'package:flutter_swiper_null_safety/flutter_swiper_null_safety.dart';
@@ -95,13 +95,13 @@ class _DetailsScreenState extends State<DetailsScreen>
   }
 
   // navigate to store
-  void navigateToStore() {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => StoreDetails(store: store),
-      ),
-    );
-  }
+  // void navigateToStore() {
+  //   Navigator.of(context).push(
+  //     MaterialPageRoute(
+  //       builder: (context) => StoreDetails(store: store),
+  //     ),
+  //   );
+  // }
 
   Animation<double>? _animation;
   AnimationController? _animationController;
@@ -220,7 +220,7 @@ class _DetailsScreenState extends State<DetailsScreen>
               color: Colors.white,
             ),
             onPress: () {
-              navigateToStore();
+              //navigateToStore();
               _animationController!.reverse();
             },
           ),

@@ -1,105 +1,194 @@
-import 'dart:async';
 import 'dart:io';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import '../../../components/loading.dart';
+import 'package:get/get.dart';
 import '../../../constants/colors.dart';
+import '../../../components/loading.dart';
+import '../../../controller/editProfile_controller.dart';
 import '../../../helpers/image_picker.dart';
 
-// for fields
-enum Field {
-  fullname,
-  email,
-  password,
-  phone,
-  address,
-}
+class EditProfile extends GetView<EditprofileController> {
+  static const routeName = '/editProfile';
+  const EditProfile({super.key, this.editPasswordOnly = false,});
 
-class EditProfile extends StatefulWidget {
-  const EditProfile({
-    Key? key,
-    this.editPasswordOnly = false,
-  }) : super(key: key);
   final bool editPasswordOnly;
 
   @override
-  State<EditProfile> createState() => _EditProfileState();
-}
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        leading: GestureDetector(
+          onTap: () => Get.back(),
+          child: const Icon(
+            Icons.chevron_left,
+            color: primaryColor,
+          ),
+        ),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        backgroundColor: primaryColor,
+        onPressed: () => controller.saveDetails(),
+        label: Text(
+          editPasswordOnly ? 'Change Password' : 'Save Details',
+          style: const TextStyle(
+            color: Colors.white,
+          ),
+        ),
+        icon: Icon(
+          editPasswordOnly ? Icons.key : Icons.save,
+          color: Colors.white,
+        ),
+      ),
+      body: Obx(() {
+        if (controller.isLoading.value) {
+          return const Center(
+            child: Loading(
+              color: primaryColor,
+              kSize: 40,
+            ),
+          );
+        }
 
-class _EditProfileState extends State<EditProfile> {
-  final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
-  final _fullnameController = TextEditingController();
-  final _phoneController = TextEditingController();
-  final _addressController = TextEditingController();
-  final _passwordController = TextEditingController();
-  var obscure = true; // password obscure value
-  File? profileImage;
-  final _auth = FirebaseAuth.instance;
-  final firebase = FirebaseFirestore.instance;
-  var userId = FirebaseAuth.instance.currentUser!.uid;
-  DocumentSnapshot? credential;
-  var isLoading = true;
-  var isInit = true;
-  var changePassword = false;
-
-  // fetch user credentials
-  _fetchUserDetails() async {
-    credential = await firebase.collection('sellers').doc(userId).get();
-    _emailController.text = credential!['email'];
-    _fullnameController.text = credential!['fullname'];
-    _phoneController.text = credential!['phone'];
-    _addressController.text = credential!['address'];
-    setState(() {
-      isLoading = false;
-    });
+        return SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 18.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                editPasswordOnly
+                    ? const SizedBox.shrink()
+                    : ProfileImagePicker(
+                  selectImage: (image) => controller.profileImage = image,
+                  isReg: false,
+                  imgUrl: controller.emailController.text,
+                ),
+                const SizedBox(height: 10),
+                Center(
+                  child: Text(
+                    editPasswordOnly || controller.changePassword.value
+                        ? 'Change Password'
+                        : 'Edit Profile Details',
+                    style: const TextStyle(
+                      color: primaryColor,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Form(
+                  key: controller.formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      editPasswordOnly
+                          ? const SizedBox.shrink()
+                          : Column(
+                        children: [
+                          _buildTextField(
+                            controller.emailController,
+                            'Email Address',
+                            Field.email,
+                          ),
+                          const SizedBox(height: 15),
+                          _buildTextField(
+                            controller.fullnameController,
+                            'Fullname',
+                            Field.fullname,
+                          ),
+                          const SizedBox(height: 15),
+                          _buildTextField(
+                            controller.phoneController,
+                            'Phone Number',
+                            Field.phone,
+                          ),
+                          const SizedBox(height: 15),
+                          _buildTextField(
+                            controller.addressController,
+                            'Delivery Address',
+                            Field.address,
+                          ),
+                        ],
+                      ),
+                      editPasswordOnly
+                          ? const SizedBox.shrink()
+                          : Row(
+                        children: [
+                          Text(
+                            controller.changePassword.value
+                                ? 'Don\'t change password'
+                                : 'Change Password',
+                            style: const TextStyle(color: primaryColor),
+                          ),
+                          Checkbox(
+                            checkColor: Colors.white,
+                            activeColor: primaryColor,
+                            value: controller.changePassword.value,
+                            onChanged: (value) => controller.changePassword.value = value!,
+                            side: const BorderSide(
+                              color: primaryColor,
+                              width: 1,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                        ],
+                      ),
+                      controller.changePassword.value || editPasswordOnly
+                          ? _buildTextField(
+                        controller.passwordController,
+                        'Password',
+                        Field.password,
+                        obscureText: controller.obscure.value,
+                        onToggleObscure: controller.togglePasswordObscure,
+                      )
+                          : const SizedBox.shrink(),
+                      const SizedBox(height: 30),
+                    ],
+                  ),
+                )
+              ],
+            ),
+          ),
+        );
+      }),
+    );
   }
 
-  // toggle password obscure
-  _togglePasswordObscure() {
-    setState(() {
-      obscure = !obscure;
-    });
-  }
-
-  // custom textfield for all form fields
-  Widget kTextField(
-    TextEditingController controller,
-    String hint,
-    String label,
-    Field field,
-    bool obscureText,
-  ) {
+  Widget _buildTextField(
+      TextEditingController controller,
+      String label,
+      Field field, {
+        bool obscureText = false,
+        VoidCallback? onToggleObscure,
+      }) {
     return TextFormField(
       controller: controller,
       obscureText: obscureText,
       keyboardType: field == Field.email
           ? TextInputType.emailAddress
           : field == Field.phone
-              ? TextInputType.phone
-              : TextInputType.text,
+          ? TextInputType.phone
+          : TextInputType.text,
       textInputAction:
-          field == Field.password ? TextInputAction.done : TextInputAction.next,
-      autofocus: field == Field.email ? true : false,
+      field == Field.password ? TextInputAction.done : TextInputAction.next,
       decoration: InputDecoration(
         labelText: label,
         labelStyle: const TextStyle(color: primaryColor),
         suffixIcon: field == Field.password
-            ? _passwordController.text.isNotEmpty
-                ? IconButton(
-                    onPressed: () => _togglePasswordObscure(),
-                    icon: Icon(
-                      obscure ? Icons.visibility : Icons.visibility_off,
-                      color: primaryColor,
-                    ),
-                  )
-                : const SizedBox.shrink()
+            ? controller.text.isNotEmpty
+            ? IconButton(
+          onPressed: onToggleObscure,
+          icon: Icon(
+            obscureText ? Icons.visibility : Icons.visibility_off,
+            color: primaryColor,
+          ),
+        )
+            : const SizedBox.shrink()
             : const SizedBox.shrink(),
-        hintText: hint,
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20),
           borderSide: const BorderSide(
@@ -122,28 +211,24 @@ class _EditProfileState extends State<EditProfile> {
               return 'Email is not valid!';
             }
             if (value.isEmpty) {
-              return 'Email can not be empty';
+              return 'Email cannot be empty';
             }
             break;
-
           case Field.fullname:
             if (value!.isEmpty || value.length < 3) {
               return 'Fullname is not valid';
             }
             break;
-
           case Field.phone:
             if (value!.isEmpty || value.length < 10) {
               return 'Phone number is not valid';
             }
             break;
-
           case Field.address:
             if (value!.isEmpty || value.length < 10) {
               return 'Delivery address is not valid';
             }
             break;
-
           case Field.password:
             if (value!.isEmpty || value.length < 8) {
               return 'Password needs to be valid';
@@ -154,279 +239,265 @@ class _EditProfileState extends State<EditProfile> {
       },
     );
   }
-
-  // for selecting photo
-  _selectPhoto(File image) {
-    setState(() {
-      profileImage = image;
-    });
-  }
-
-  // loading fnc
-  isLoadingFnc() {
-    setState(() {
-      isLoading = true;
-    });
-    Timer(const Duration(seconds: 5), () {
-      Navigator.of(context).pop();
-    });
-  }
-
-  @override
-  void initState() {
-    // TODO: implement initState
-    _passwordController.addListener(() {
-      setState(() {});
-    });
-    super.initState();
-  }
-
-  @override
-  void didChangeDependencies() {
-    // TODO: implement didChangeDependencies
-    if (isInit) {
-      _fetchUserDetails();
-    }
-    setState(() {
-      isInit = false;
-    });
-    super.didChangeDependencies();
-  }
-
-  // snackbar for error message
-  showSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          message,
-          style: const TextStyle(
-            color: Colors.white,
-          ),
-        ),
-        backgroundColor: primaryColor,
-        action: SnackBarAction(
-          onPressed: () => Navigator.of(context).pop(),
-          label: 'Dismiss',
-          textColor: Colors.white,
-        ),
-      ),
-    );
-  }
-
-  Future _saveDetails() async {
-    var valid = _formKey.currentState!.validate();
-    FocusScope.of(context).unfocus();
-    _formKey.currentState!.save();
-    if (!valid) {
-      return null;
-    }
-
-    if (widget.editPasswordOnly || changePassword) {
-      // TODO: Implement password change
-      _auth.currentUser!.updatePassword(_passwordController.text.trim());
-      isLoadingFnc();
-    } else {
-      // TODO: Implement profile edit
-      // Image
-      var storageRef = FirebaseStorage.instance
-          .ref()
-          .child('user-images')
-          .child('$userId.jpg');
-      File? file;
-      if (profileImage != null) {
-        file = File(profileImage!.path);
-      }
-
-      try {
-        if (profileImage != null) {
-          await storageRef.putFile(file!);
-        }
-        //  obtain image download url
-        var downloadUrl = await storageRef.getDownloadURL();
-
-        // TODO: persisting new details to firebase
-        _auth.currentUser!.updateEmail(_emailController.text.trim());
-        firebase.collection('sellers').doc(userId).set({
-          "email": _emailController.text.trim(),
-          "fullname": _fullnameController.text.trim(),
-          "phone": _phoneController.text.trim(),
-          "address": _addressController.text.trim(),
-          "image": downloadUrl,
-        });
-        isLoadingFnc();
-      } on FirebaseException catch (e) {
-        showSnackBar('Error occurred! ${e.message}');
-      } catch (e) {
-        if (kDebugMode) {
-          print(e);
-        }
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    SystemChrome.setSystemUIOverlayStyle(
-      SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        systemNavigationBarColor: litePrimary,
-        statusBarIconBrightness: Brightness.dark,
-        systemNavigationBarDividerColor: Colors.grey,
-        statusBarBrightness: Brightness.dark,
-      ),
-    );
-    return Scaffold(
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        leading: Builder(builder: (context) {
-          return GestureDetector(
-            onTap: () => Navigator.of(context).pop(),
-            child: const Icon(
-              Icons.chevron_left,
-              color: primaryColor,
-            ),
-          );
-        }),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: primaryColor,
-        onPressed: () => _saveDetails(),
-        label: Text(
-          widget.editPasswordOnly ? 'Change Password' : 'Save Details',
-          style: const TextStyle(
-            color: Colors.white,
-          ),
-        ),
-        icon: Icon(
-          widget.editPasswordOnly ? Icons.key : Icons.save,
-          color: Colors.white,
-        ),
-      ),
-      body: SingleChildScrollView(
-        child: isLoading
-            ? const Center(
-                child: Loading(
-                  color: primaryColor,
-                  kSize: 40,
-                ),
-              )
-            : Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 18.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    widget.editPasswordOnly
-                        ? const SizedBox.shrink()
-                        : ProfileImagePicker(
-                            selectImage: _selectPhoto,
-                            isReg: false,
-                            imgUrl: credential!['image'],
-                          ),
-                    const SizedBox(height: 10),
-                    Center(
-                      child: Text(
-                        widget.editPasswordOnly || changePassword
-                            ? 'Change Password'
-                            : 'Edit Profile Details',
-                        style: const TextStyle(
-                          color: primaryColor,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    Form(
-                      key: _formKey,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          widget.editPasswordOnly
-                              ? const SizedBox.shrink()
-                              : Column(
-                                  children: [
-                                    kTextField(
-                                      _emailController,
-                                      _emailController.text,
-                                      'Email Address',
-                                      Field.email,
-                                      false,
-                                    ),
-                                    const SizedBox(height: 15),
-                                    kTextField(
-                                      _fullnameController,
-                                      _fullnameController.text,
-                                      'Fullname',
-                                      Field.fullname,
-                                      false,
-                                    ),
-                                    const SizedBox(height: 15),
-                                    kTextField(
-                                      _phoneController,
-                                      _phoneController.text,
-                                      'Phone Number',
-                                      Field.phone,
-                                      false,
-                                    ),
-                                    const SizedBox(height: 15),
-                                    kTextField(
-                                      _addressController,
-                                      _addressController.text,
-                                      'Delivery Address',
-                                      Field.address,
-                                      false,
-                                    ),
-                                  ],
-                                ),
-                          widget.editPasswordOnly
-                              ? const SizedBox.shrink()
-                              : Row(
-                                  children: [
-                                    Text(
-                                      changePassword
-                                          ? 'Don\'t change password'
-                                          : 'Change Password',
-                                      style:
-                                          const TextStyle(color: primaryColor),
-                                    ),
-                                    Checkbox(
-                                      checkColor: Colors.white,
-                                      activeColor: primaryColor,
-                                      value: changePassword,
-                                      onChanged: (value) => setState(
-                                        () {
-                                          changePassword = value!;
-                                        },
-                                      ),
-                                      side: const BorderSide(
-                                        color: primaryColor,
-                                        width: 1,
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(4),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                          changePassword || widget.editPasswordOnly
-                              ? kTextField(
-                                  _passwordController,
-                                  '********',
-                                  'Password',
-                                  Field.password,
-                                  obscure,
-                                )
-                              : const SizedBox.shrink(),
-                          const SizedBox(height: 30),
-                        ],
-                      ),
-                    )
-                  ],
-                ),
-              ),
-      ),
-    );
-  }
 }
+
+
+
+
+
+
+
+
+
+// import 'package:flutter/material.dart';
+// import 'package:get/get.dart';
+// import '../../../controller/ProfileController.dart';
+// import '../../../components/loading.dart';
+// import '../../../constants/colors.dart';
+// import '../../../controller/editProfile_controller.dart';
+// import '../../../helpers/image_picker.dart';
+//
+// class EditProfile extends GetView<EditprofileController> {
+//   static const routeName = '/editProfile';
+//   const EditProfile({Key? key, this.editPasswordOnly = false}) : super(key: key);
+//   final bool editPasswordOnly;
+//
+//   @override
+//   Widget build(BuildContext context) {
+//
+//     Widget kTextField(
+//         TextEditingController controller,
+//         String hint,
+//         String label,
+//         Field field,
+//         bool obscureText,
+//         ) {
+//       return Obx(() => TextFormField(
+//         controller: controller,
+//         obscureText: obscureText,
+//         keyboardType: field == Field.email
+//             ? TextInputType.emailAddress
+//             : field == Field.phone
+//             ? TextInputType.phone
+//             : TextInputType.text,
+//         textInputAction: field == Field.password
+//             ? TextInputAction.done
+//             : TextInputAction.next,
+//         autofocus: field == Field.email ? true : false,
+//         decoration: InputDecoration(
+//           labelText: label,
+//           labelStyle: const TextStyle(color: primaryColor),
+//           suffixIcon: field == Field.password
+//               ? controller.text.isNotEmpty
+//               ? IconButton(
+//             onPressed: controller == Get.find<EditprofileController>().passwordController ? Get.find<EditprofileController>().togglePasswordObscure : null,
+//             icon: Icon(
+//               controller == Get.find<EditprofileController>().passwordController && Get.find<EditprofileController>().obscure.value ? Icons.visibility : Icons.visibility_off,
+//               color: primaryColor,
+//             ),
+//           )
+//               : const SizedBox.shrink()
+//               : const SizedBox.shrink(),
+//           hintText: hint,
+//           focusedBorder: OutlineInputBorder(
+//             borderRadius: BorderRadius.circular(20),
+//             borderSide: const BorderSide(
+//               width: 2,
+//               color: primaryColor,
+//             ),
+//           ),
+//           border: OutlineInputBorder(
+//             borderRadius: BorderRadius.circular(20),
+//             borderSide: const BorderSide(
+//               width: 1,
+//               color: Colors.grey,
+//             ),
+//           ),
+//         ),
+//         validator: (value) {
+//           switch (field) {
+//             case Field.email:
+//               if (!value!.contains('@')) {
+//                 return 'Email is not valid!';
+//               }
+//               if (value.isEmpty) {
+//                 return 'Email can not be empty';
+//               }
+//               break;
+//             case Field.fullname:
+//               if (value!.isEmpty || value.length < 3) {
+//                 return 'Fullname is not valid';
+//               }
+//               break;
+//             case Field.phone:
+//               if (value!.isEmpty || value.length < 10) {
+//                 return 'Phone number is not valid';
+//               }
+//               break;
+//             case Field.address:
+//               if (value!.isEmpty || value.length < 10) {
+//                 return 'Delivery address is not valid';
+//               }
+//               break;
+//             case Field.password:
+//               if (value!.isEmpty || value.length < 8) {
+//                 return 'Password needs to be valid';
+//               }
+//               break;
+//           }
+//           return null;
+//         },
+//       )
+//
+//       );
+//     }
+//
+//     return Scaffold(
+//       appBar: AppBar(
+//         elevation: 0,
+//         backgroundColor: Colors.transparent,
+//         leading: Builder(builder: (context) {
+//           return GestureDetector(
+//             onTap: () => Navigator.of(context).pop(),
+//             child: const Icon(
+//               Icons.chevron_left,
+//               color: primaryColor,
+//             ),
+//           );
+//         }),
+//       ),
+//       floatingActionButton: FloatingActionButton.extended(
+//         backgroundColor: primaryColor,
+//         onPressed: Get.find<EditprofileController>().saveDetails,
+//         label: Text(
+//           editPasswordOnly ? 'Change Password' : 'Save Details',
+//           style: const TextStyle(color: Colors.white),
+//         ),
+//         icon: Icon(
+//           editPasswordOnly ? Icons.key : Icons.save,
+//           color: Colors.white,
+//         ),
+//       ),
+//       body: Obx(() => Get.find<EditprofileController>().isLoading.value
+//           ? const Center(
+//         child: Loading(
+//           color: primaryColor,
+//           kSize: 40,
+//         ),
+//       )
+//           : Padding(
+//         padding: const EdgeInsets.symmetric(horizontal: 18.0),
+//         child: Column(
+//           mainAxisAlignment: MainAxisAlignment.center,
+//           crossAxisAlignment: CrossAxisAlignment.stretch,
+//           children: [
+//             editPasswordOnly
+//                 ? const SizedBox.shrink()
+//                 : ProfileImagePicker(
+//               selectImage: (image) {
+//                 Get.find<EditprofileController>().profileImage = image;
+//               },
+//               isReg: false,
+//               imgUrl: Get.find<EditprofileController>().emailController.text,
+//             ),
+//             const SizedBox(height: 10),
+//             Center(
+//               child: Text(
+//                 editPasswordOnly || Get.find<EditprofileController>().changePassword.value
+//                     ? 'Change Password'
+//                     : 'Edit Profile Details',
+//                 style: const TextStyle(
+//                   color: primaryColor,
+//                   fontSize: 18,
+//                   fontWeight: FontWeight.w600,
+//                 ),
+//               ),
+//             ),
+//             const SizedBox(height: 20),
+//             Form(
+//               key: Get.find<EditprofileController>().formKey, // Use formKey from controller
+//               child: Column(
+//                 crossAxisAlignment: CrossAxisAlignment.stretch,
+//                 children: [
+//                   editPasswordOnly
+//                       ? const SizedBox.shrink()
+//                       : Column(
+//                     children: [
+//                       kTextField(
+//                         Get.find<EditprofileController>().emailController,
+//                         Get.find<EditprofileController>().emailController.text,
+//                         'Email Address',
+//                         Field.email,
+//                         false,
+//                       ),
+//                       const SizedBox(height: 15),
+//                       kTextField(
+//                         Get.find<EditprofileController>().fullnameController,
+//                         Get.find<EditprofileController>().fullnameController.text,
+//                         'Full Name',
+//                         Field.fullname,
+//                         false,
+//                       ),
+//                       const SizedBox(height: 15),
+//                       kTextField(
+//                         Get.find<EditprofileController>().phoneController,
+//                         Get.find<EditprofileController>().phoneController.text,
+//                         'Phone Number',
+//                         Field.phone,
+//                         false,
+//                       ),
+//                       const SizedBox(height: 15),
+//                       kTextField(
+//                         Get.find<EditprofileController>().addressController,
+//                         Get.find<EditprofileController>().addressController.text,
+//                         'Address',
+//                         Field.address,
+//                         false,
+//                       ),
+//                       const SizedBox(height: 30),
+//                     ],
+//                   ),
+//                   Row(
+//                     children: [
+//                       Text(
+//                         Get.find<EditprofileController>().changePassword.value
+//                             ? 'Don\'t change password'
+//                             : 'Change Password',
+//                         style: const TextStyle(color: primaryColor),
+//                       ),
+//                       Checkbox(
+//                         checkColor: Colors.white,
+//                         activeColor: primaryColor,
+//                         value: Get.find<EditprofileController>().changePassword.value,
+//                         onChanged: (value) {
+//                           Get.find<EditprofileController>().changePassword.value = value!;
+//                         },
+//                         side: const BorderSide(
+//                           color: primaryColor,
+//                           width: 1,
+//                         ),
+//                         shape: RoundedRectangleBorder(
+//                           borderRadius: BorderRadius.circular(4),
+//                         ),
+//                       ),
+//                     ],
+//                   ),
+//                   Get.find<EditprofileController>().changePassword.value || editPasswordOnly
+//                       ? kTextField(
+//                     Get.find<EditprofileController>().passwordController,
+//                     '********',
+//                     'Password',
+//                     Field.password,
+//                     Get.find<EditprofileController>().obscure.value,
+//                   )
+//                       : const SizedBox.shrink(),
+//                   const SizedBox(height: 30),
+//                 ],
+//               ),
+//             ),
+//           ],
+//         ),
+//       )),
+//     );
+//   }
+// }

@@ -1,5 +1,6 @@
-import 'package:carousel_slider/carousel_slider.dart';
+//import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_carousel_slider_plus/carousel_slider.dart';
 
 var slides = [
   'assets/images/slides/slide_1.jpg',

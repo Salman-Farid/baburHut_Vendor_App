@@ -36,87 +36,90 @@ class DashboardScreen extends StatelessWidget {
       'icon': Icons.monetization_on,
       'routeName': AccountBalanceScreen.routeName,
     },
-    {
-      'title': 'Store Setup',
-      'icon': Icons.store_sharp,
-      'routeName': StoreSetupScreen.routeName,
-    },
+    // {
+    //   'title': 'Store Setup',
+    //   'icon': Icons.store_sharp,
+    //   'routeName': StoreSetupScreen.routeName,
+    // },
   ];
 
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
-    return Padding(
-      padding: const EdgeInsets.only(
-        top: 48.0,
-        right: 18,
-        left: 18,
-      ),
-      child: Column(
-        children: [
-          const Center(
-            child: Wrap(
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: [
-                Icon(
-                  Icons.dashboard,
-                  color: primaryColor,
-                ),
-                Text(
-                  'Dashboard',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 28,
+    return Container(
+      color: Colors.white,
+      child: Padding(
+        padding: const EdgeInsets.only(
+          top: 48.0,
+          right: 18,
+          left: 18,
+        ),
+        child: Column(
+          children: [
+            const Center(
+              child: Wrap(
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  Icon(
+                    Icons.dashboard,
                     color: primaryColor,
                   ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-          SizedBox(
-            height: size.height / 1.25,
-            child: GridView.builder(
-              padding: EdgeInsets.zero,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 10,
-                mainAxisSpacing: 25,
-              ),
-              itemCount: menuList.length,
-              itemBuilder: (context, index) => GestureDetector(
-                onTap: () => Navigator.of(context).pushNamed(menuList[index]['routeName']),
-                child: Card(
-                  elevation: 5,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
+                  Text(
+                    'Dashboard',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 28,
+                      color: primaryColor,
+                    ),
                   ),
-                  color: Colors.white,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(menuList[index]['icon'],
-                        size: 65,
-                        color: primaryColor,
-                      ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      Text(
-                        menuList[index]['title'],
-                        style: const TextStyle(
-                          color: Colors.grey,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              height: size.height / 1.25,
+              child: GridView.builder(
+                padding: EdgeInsets.zero,
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 10,
+                  mainAxisSpacing: 25,
+                ),
+                itemCount: menuList.length,
+                itemBuilder: (context, index) => GestureDetector(
+                  onTap: () => Navigator.of(context).pushNamed(menuList[index]['routeName']),
+                  child: Card(
+                    elevation: 5,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    color: Colors.white,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(menuList[index]['icon'],
+                          size: 65,
+                          color: primaryColor,
                         ),
-                      )
-                    ],
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        Text(
+                          menuList[index]['title'],
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
+                        )
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-          )
-        ],
+            )
+          ],
+        ),
       ),
     );
   }
